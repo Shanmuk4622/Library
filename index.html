@@ -68,14 +68,14 @@
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
                             <h1 class="text-3xl font-bold text-slate-900">My Library</h1>
-                             <div class="flex items-center gap-4 border-l border-slate-300 pl-4">
-                                <div>
-                                    <span id="total-books-stat" class="text-2xl font-bold text-slate-800">0</span>
-                                    <span class="text-sm text-slate-500">Total Books</span>
+                             <div class="flex items-center gap-6 border-l border-slate-300 pl-6">
+                                <div class="text-center">
+                                    <p id="total-books-stat" class="text-3xl font-bold text-slate-800">0</p>
+                                    <p class="text-sm text-slate-500">Total Books</p>
                                 </div>
-                                <div>
-                                    <span id="available-books-stat" class="text-2xl font-bold text-green-600">0</span>
-                                    <span class="text-sm text-slate-500">Available</span>
+                                <div class="text-center">
+                                    <p id="available-books-stat" class="text-3xl font-bold text-green-600">0</p>
+                                    <p class="text-sm text-slate-500">Available</p>
                                 </div>
                             </div>
                         </div>
@@ -418,8 +418,12 @@
             function updateStats() {
                 const totalBooks = allBooks.length;
                 const availableBooks = allBooks.filter(book => book.isAvailable).length;
-                totalBooksStat.textContent = totalBooks;
-                availableBooksStat.textContent = availableBooks;
+                
+                const libraryTotalEl = document.getElementById('total-books-stat');
+                const libraryAvailableEl = document.getElementById('available-books-stat');
+
+                if (libraryTotalEl) libraryTotalEl.textContent = totalBooks;
+                if (libraryAvailableEl) libraryAvailableEl.textContent = availableBooks;
             }
 
             function renderBooks() {

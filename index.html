@@ -64,11 +64,11 @@
             <!-- Library Page -->
             <div id="page-library" class="page p-4 sm:p-6 lg:p-8">
                 <!-- Header -->
-                <header class="mb-8">
+                <header class="mb-6">
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
                             <h1 class="text-3xl font-bold text-slate-900">My Library</h1>
-                             <div class="flex items-center gap-6 border-l border-slate-300 pl-6">
+                             <div class="hidden sm:flex items-center gap-6 border-l border-slate-300 pl-6">
                                 <div class="text-center">
                                     <p id="total-books-stat" class="text-3xl font-bold text-slate-800">0</p>
                                     <p class="text-sm text-slate-500">Total Books</p>
@@ -104,6 +104,34 @@
                         </div>
                     </div>
                 </header>
+                
+                <!-- Filters and Sorting -->
+                <div class="mb-6 p-4 bg-white rounded-lg shadow-sm">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                             <label for="filter-genre" class="block text-sm font-medium text-gray-700">Filter by Genre</label>
+                             <select id="filter-genre" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md">
+                                 <option value="all">All Genres</option>
+                             </select>
+                        </div>
+                         <div>
+                             <label for="filter-status" class="block text-sm font-medium text-gray-700">Filter by Status</label>
+                             <select id="filter-status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md">
+                                 <option value="all">All</option>
+                                 <option value="available">Available</option>
+                                 <option value="checked-out">Checked Out</option>
+                             </select>
+                        </div>
+                         <div>
+                             <label for="sort-by" class="block text-sm font-medium text-gray-700">Sort By</label>
+                             <select id="sort-by" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md">
+                                 <option value="date-desc">Date Added (Newest)</option>
+                                 <option value="title-asc">Title (A-Z)</option>
+                                 <option value="author-asc">Author (A-Z)</option>
+                             </select>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Main Content -->
                 <main id="main-content">
@@ -308,6 +336,10 @@
             const bookListContainer = document.getElementById('book-list-container');
             const searchInput = document.getElementById('search-input');
             const clearSearchBtn = document.getElementById('clear-search-btn');
+            
+            const filterGenreSelect = document.getElementById('filter-genre');
+            const filterStatusSelect = document.getElementById('filter-status');
+            const sortBySelect = document.getElementById('sort-by');
 
             const totalBooksStat = document.getElementById('total-books-stat');
             const availableBooksStat = document.getElementById('available-books-stat');
@@ -339,23 +371,25 @@
                                 date: new Date(entry.date)
                             }));
                         }
-                        return book;
+                        return { ...book, addedAt: book.addedAt ? new Date(book.addedAt) : new Date() };
                     });
                 } else {
-                    allBooks = [
-                        { id: '1', title: 'The Hobbit', author: 'J.R.R. Tolkien', isbn: '9780547928227', isAvailable: true, history: [], genre: 'Fantasy', publicationDate: '1937-09-21', coverImageUrl: 'https://m.media-amazon.com/images/I/710+HcoP38L._AC_UF1000,1000_QL80_.jpg', synopsis: 'A reluctant hobbit, Bilbo Baggins, sets out to the Lonely Mountain with a spirited group of dwarves to reclaim their mountain home, and a dragon\'s treasure hoard, from Smaug.' },
-                        { id: '2', title: '1984', author: 'George Orwell', isbn: '9780451524935', isAvailable: false, history: [], genre: 'Dystopian', publicationDate: '1949-06-08', coverImageUrl: 'https://m.media-amazon.com/images/I/71kxa1-0mfL._AC_UF1000,1000_QL80_.jpg', synopsis: 'In a totalitarian superstate, a man whose job is to rewrite history dreams of rebellion against the omnipresent Party and its dictatorial leader, Big Brother.' },
-                        { id: '3', title: 'Dune', author: 'Frank Herbert', isbn: '9780441013593', isAvailable: true, history: [], genre: 'Science Fiction', publicationDate: '1965-08-01', coverImageUrl: 'https://m.media-amazon.com/images/I/81d+pLPM+0L._AC_UF1000,1000_QL80_.jpg', synopsis: 'The son of a noble family is entrusted with the protection of the most valuable asset and most vital element in the galaxy.' },
-                        { id: '4', title: 'Brave New World', author: 'Aldous Huxley', isbn: '9780060850524', isAvailable: true, history: [], genre: 'Dystopian', publicationDate: '1932-08-30', coverImageUrl: 'https://m.media-amazon.com/images/I/81zE42gT3xL._AC_UF1000,1000_QL80_.jpg', synopsis: 'A dystopian novel which presents a future society where people are genetically engineered and conditioned to be happy and compliant.' },
-                        { id: '5', title: 'To Kill a Mockingbird', author: 'Harper Lee', isbn: '9780061120084', isAvailable: false, history: [], genre: 'Classic', publicationDate: '1960-07-11', coverImageUrl: 'https://m.media-amazon.com/images/I/81aY1lxk+9L._AC_UF1000,1000_QL80_.jpg', synopsis: 'A lawyer in the Depression-era South defends a black man against an undeserved rape charge, and his children against prejudice.' },
-                        { id: '6', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', isbn: '9780743273565', isAvailable: true, history: [], genre: 'Classic', publicationDate: '1925-04-10', coverImageUrl: 'https://m.media-amazon.com/images/I/71FTb9X6wsL._AC_UF1000,1000_QL80_.jpg', synopsis: 'A Midwesterner becomes fascinated by the mysterious, wealthy Jay Gatsby and his obsession with his former love, Daisy Buchanan.' },
-                        { id: '7', title: 'Pride and Prejudice', author: 'Jane Austen', isbn: '9780141439518', isAvailable: true, history: [], genre: 'Romance', publicationDate: '1813-01-28', coverImageUrl: 'https://m.media-amazon.com/images/I/81m6P4wQBgL._AC_UF1000,1000_QL80_.jpg', synopsis: 'The spirited Elizabeth Bennet faces mounting pressure from her parents to marry, and she is not afraid to speak her mind.' },
-                        { id: '8', title: 'The Catcher in the Rye', author: 'J.D. Salinger', isbn: '9780316769488', isAvailable: false, history: [], genre: 'Fiction', publicationDate: '1951-07-16', coverImageUrl: 'https://m.media-amazon.com/images/I/71nXPGovoGL._AC_UF1000,1000_QL80_.jpg', synopsis: 'The story of a few days in the life of a troubled teenage boy, Holden Caulfield, who has been expelled from his prep school.' },
-                        { id: '9', title: 'Moby Dick', author: 'Herman Melville', isbn: '9781503280786', isAvailable: true, history: [], genre: 'Adventure', publicationDate: '1851-10-18', coverImageUrl: 'https://m.media-amazon.com/images/I/81m6P4wQBgL._AC_UF1000,1000_QL80_.jpg', synopsis: 'The obsessive quest of Ahab, captain of the whaler Pequod, for revenge on Moby Dick, the giant white sperm whale that on the previous whaling voyage bit off Ahab\'s leg at the knee.' },
-                        { id: '10', title: 'War and Peace', author: 'Leo Tolstoy', isbn: '9780140447934', isAvailable: true, history: [], genre: 'Historical Fiction', publicationDate: '1869-01-01', coverImageUrl: 'https://m.media-amazon.com/images/I/71wXZB-2g5L._AC_UF1000,1000_QL80_.jpg', synopsis: 'A historical novel that chronicles the history of the French invasion of Russia and the impact of the Napoleonic era on Tsarist society through the stories of five Russian aristocratic families.' }
+                     const now = new Date();
+                     allBooks = [
+                        { id: '1', title: 'The Hobbit', author: 'J.R.R. Tolkien', isbn: '9780547928227', isAvailable: true, history: [], genre: 'Fantasy', publicationDate: '1937-09-21', coverImageUrl: 'https://m.media-amazon.com/images/I/710+HcoP38L._AC_UF1000,1000_QL80_.jpg', synopsis: 'A reluctant hobbit, Bilbo Baggins, sets out to the Lonely Mountain with a spirited group of dwarves to reclaim their mountain home, and a dragon\'s treasure hoard, from Smaug.', addedAt: new Date(now.getTime() - 9 * 24 * 60 * 60 * 1000) },
+                        { id: '2', title: '1984', author: 'George Orwell', isbn: '9780451524935', isAvailable: false, history: [], genre: 'Dystopian', publicationDate: '1949-06-08', coverImageUrl: 'https://m.media-amazon.com/images/I/71kxa1-0mfL._AC_UF1000,1000_QL80_.jpg', synopsis: 'In a totalitarian superstate, a man whose job is to rewrite history dreams of rebellion against the omnipresent Party and its dictatorial leader, Big Brother.', addedAt: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000) },
+                        { id: '3', title: 'Dune', author: 'Frank Herbert', isbn: '9780441013593', isAvailable: true, history: [], genre: 'Science Fiction', publicationDate: '1965-08-01', coverImageUrl: 'https://m.media-amazon.com/images/I/81d+pLPM+0L._AC_UF1000,1000_QL80_.jpg', synopsis: 'The son of a noble family is entrusted with the protection of the most valuable asset and most vital element in the galaxy.', addedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) },
+                        { id: '4', title: 'Brave New World', author: 'Aldous Huxley', isbn: '9780060850524', isAvailable: true, history: [], genre: 'Dystopian', publicationDate: '1932-08-30', coverImageUrl: 'https://m.media-amazon.com/images/I/81zE42gT3xL._AC_UF1000,1000_QL80_.jpg', synopsis: 'A dystopian novel which presents a future society where people are genetically engineered and conditioned to be happy and compliant.', addedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000) },
+                        { id: '5', title: 'To Kill a Mockingbird', author: 'Harper Lee', isbn: '9780061120084', isAvailable: false, history: [], genre: 'Classic', publicationDate: '1960-07-11', coverImageUrl: 'https://m.media-amazon.com/images/I/81aY1lxk+9L._AC_UF1000,1000_QL80_.jpg', synopsis: 'A lawyer in the Depression-era South defends a black man against an undeserved rape charge, and his children against prejudice.', addedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000) },
+                        { id: '6', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', isbn: '9780743273565', isAvailable: true, history: [], genre: 'Classic', publicationDate: '1925-04-10', coverImageUrl: 'https://m.media-amazon.com/images/I/71FTb9X6wsL._AC_UF1000,1000_QL80_.jpg', synopsis: 'A Midwesterner becomes fascinated by the mysterious, wealthy Jay Gatsby and his obsession with his former love, Daisy Buchanan.', addedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000) },
+                        { id: '7', title: 'Pride and Prejudice', author: 'Jane Austen', isbn: '9780141439518', isAvailable: true, history: [], genre: 'Romance', publicationDate: '1813-01-28', coverImageUrl: 'https://m.media-amazon.com/images/I/81m6P4wQBgL._AC_UF1000,1000_QL80_.jpg', synopsis: 'The spirited Elizabeth Bennet faces mounting pressure from her parents to marry, and she is not afraid to speak her mind.', addedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000) },
+                        { id: '8', title: 'The Catcher in the Rye', author: 'J.D. Salinger', isbn: '9780316769488', isAvailable: false, history: [], genre: 'Fiction', publicationDate: '1951-07-16', coverImageUrl: 'https://m.media-amazon.com/images/I/71nXPGovoGL._AC_UF1000,1000_QL80_.jpg', synopsis: 'The story of a few days in the life of a troubled teenage boy, Holden Caulfield, who has been expelled from his prep school.', addedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000) },
+                        { id: '9', title: 'Moby Dick', author: 'Herman Melville', isbn: '9781503280786', isAvailable: true, history: [], genre: 'Adventure', publicationDate: '1851-10-18', coverImageUrl: 'https://m.media-amazon.com/images/I/81m6P4wQBgL._AC_UF1000,1000_QL80_.jpg', synopsis: 'The obsessive quest of Ahab, captain of the whaler Pequod, for revenge on Moby Dick, the giant white sperm whale that on the previous whaling voyage bit off Ahab\'s leg at the knee.', addedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000) },
+                        { id: '10', title: 'War and Peace', author: 'Leo Tolstoy', isbn: '9780140447934', isAvailable: true, history: [], genre: 'Historical Fiction', publicationDate: '1869-01-01', coverImageUrl: 'https://m.media-amazon.com/images/I/71wXZB-2g5L._AC_UF1000,1000_QL80_.jpg', synopsis: 'A historical novel that chronicles the history of the French invasion of Russia and the impact of the Napoleonic era on Tsarist society through the stories of five Russian aristocratic families.', addedAt: now }
                     ];
                     saveState();
                 }
+                 updateGenreFilter();
             }
 
             // --- Helper Functions ---
@@ -425,16 +459,58 @@
                 if (libraryTotalEl) libraryTotalEl.textContent = totalBooks;
                 if (libraryAvailableEl) libraryAvailableEl.textContent = availableBooks;
             }
+            
+            function updateGenreFilter() {
+                const genres = [...new Set(allBooks.map(b => b.genre).filter(Boolean))].sort();
+                const currentVal = filterGenreSelect.value;
+                filterGenreSelect.innerHTML = '<option value="all">All Genres</option>';
+                genres.forEach(genre => {
+                    const option = document.createElement('option');
+                    option.value = genre;
+                    option.textContent = genre;
+                    filterGenreSelect.appendChild(option);
+                });
+                filterGenreSelect.value = currentVal;
+            }
 
             function renderBooks() {
                 const searchTerm = searchInput.value.toLowerCase();
+                const genreFilter = filterGenreSelect.value;
+                const statusFilter = filterStatusSelect.value;
+                const sortBy = sortBySelect.value;
+                
                 clearSearchBtn.classList.toggle('hidden', !searchTerm);
 
-                const filteredBooks = allBooks.filter(book => 
-                    book.title.toLowerCase().includes(searchTerm) ||
-                    book.author.toLowerCase().includes(searchTerm) ||
-                    book.isbn.toLowerCase().includes(searchTerm)
-                );
+                let processedBooks = [...allBooks];
+
+                // Filter
+                if (statusFilter !== 'all') {
+                    const isAvailable = statusFilter === 'available';
+                    processedBooks = processedBooks.filter(b => b.isAvailable === isAvailable);
+                }
+                if (genreFilter !== 'all') {
+                    processedBooks = processedBooks.filter(b => b.genre === genreFilter);
+                }
+                if (searchTerm) {
+                    processedBooks = processedBooks.filter(book => 
+                        book.title.toLowerCase().includes(searchTerm) ||
+                        book.author.toLowerCase().includes(searchTerm) ||
+                        book.isbn.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                // Sort
+                processedBooks.sort((a, b) => {
+                    if (sortBy === 'title-asc') {
+                        return a.title.localeCompare(b.title);
+                    }
+                    if (sortBy === 'author-asc') {
+                        return a.author.localeCompare(b.author);
+                    }
+                    // Default to 'date-desc'
+                    return b.addedAt - a.addedAt;
+                });
+
 
                 bookListContainer.innerHTML = '';
                 showLoader(false);
@@ -442,12 +518,12 @@
 
                 if (allBooks.length === 0) {
                      showNoBooksMessage(true);
-                } else if (filteredBooks.length === 0 && searchTerm) {
-                    bookListContainer.innerHTML = `<p class="text-slate-500 text-center col-span-full">No books match your search for "${searchTerm}".</p>`;
+                } else if (processedBooks.length === 0) {
+                    bookListContainer.innerHTML = `<p class="text-slate-500 text-center col-span-full">No books match your current filters.</p>`;
                     showNoBooksMessage(false);
                 } else {
                     showNoBooksMessage(false);
-                    filteredBooks.forEach(book => {
+                    processedBooks.forEach(book => {
                         bookListContainer.innerHTML += createBookCardHTML(book);
                     });
                 }
@@ -504,7 +580,7 @@
                 document.getElementById('stat-unique-authors').textContent = uniqueAuthors;
 
                 const recentlyAddedList = document.getElementById('recently-added-list');
-                const recentBooks = [...allBooks].slice(0, 5);
+                const recentBooks = [...allBooks].sort((a,b) => b.addedAt - a.addedAt).slice(0, 5);
                 
                 if(recentBooks.length === 0) {
                     recentlyAddedList.innerHTML = '<p class="text-slate-500 text-center p-6">No books have been added yet.</p>';
@@ -653,9 +729,11 @@
                         id: Date.now().toString(),
                         isAvailable: true,
                         history: [],
+                        addedAt: new Date(),
                     });
                 }
                 saveState();
+                updateGenreFilter();
                 renderBooks();
                 renderDashboard();
                 closeModal(bookModal);
@@ -665,6 +743,7 @@
                 const id = deleteBookIdInput.value;
                 allBooks = allBooks.filter(b => b.id !== id);
                 saveState();
+                updateGenreFilter();
                 renderBooks();
                 renderDashboard();
                 closeModal(deleteModal);
@@ -729,6 +808,10 @@
                     renderBooks();
                 });
                 bookListContainer.addEventListener('click', handleBookListClick);
+                
+                filterGenreSelect.addEventListener('change', renderBooks);
+                filterStatusSelect.addEventListener('change', renderBooks);
+                sortBySelect.addEventListener('change', renderBooks);
             }
 
             function initializeApp() {

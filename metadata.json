@@ -1,5 +1,5 @@
 {
   "name": "Library Management System",
-  "description": "A static demonstration of a library management system with a multi-page interface. Built in a single HTML file with Vanilla JavaScript, it defaults to a dashboard view with statistics and a genre distribution chart, and also includes a library view. The app operates entirely on the client-side and uses localStorage to persist all book data, including check-in/check-out history, across sessions.",
+  "description": "A static demonstration of a library management system with a multi-page interface. Built in a single HTML file with Vanilla JavaScript, it defaults to a dashboard view with statistics and a genre distribution chart. The library view includes powerful real-time search, sorting, and filtering by genre and status. The app operates entirely on the client-side and uses localStorage to persist all book data, including check-in/check-out history, across sessions.",
   "requestFramePermissions": []
 }

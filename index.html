@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Library Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Simple transition for modals */
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        .modal.hidden {
+            pointer-events: none;
+            opacity: 0;
+        }
+        .modal-content {
+            transition: transform 0.25s ease;
+        }
+        .modal.hidden .modal-content {
+            transform: scale(0.95);
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans">
+
+    <div class="flex h-screen bg-slate-200">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="w-64 bg-slate-800 text-white flex flex-col flex-shrink-0">
+            <div class="p-6 flex items-center border-b border-slate-700">
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-sky-500">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                </svg>
+                <h1 class="ml-3 text-2xl font-bold">Library MS</h1>
+            </div>
+            <ul class="flex-grow p-4">
+                <li>
+                    <a href="#/dashboard" class="nav-link flex items-center px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white rounded-md transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#/library" class="nav-link flex items-center px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white rounded-md transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        Library
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div id="app-container" class="flex-grow overflow-y-auto">
+            <!-- Library Page -->
+            <div id="page-library" class="page p-4 sm:p-6 lg:p-8">
+                <!-- Header -->
+                <header class="mb-8">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <h1 class="text-3xl font-bold text-slate-900">My Library</h1>
+                             <div class="flex items-center gap-4 border-l border-slate-300 pl-4">
+                                <div>
+                                    <span id="total-books-stat" class="text-2xl font-bold text-slate-800">0</span>
+                                    <span class="text-sm text-slate-500">Total Books</span>
+                                </div>
+                                <div>
+                                    <span id="available-books-stat" class="text-2xl font-bold text-green-600">0</span>
+                                    <span class="text-sm text-slate-500">Available</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 w-full sm:w-auto">
+                            <!-- Search Bar -->
+                            <div class="relative flex-grow">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                    </svg>
+                                </div>
+                                <input id="search-input" type="search" placeholder="Search books..." class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 sm:text-sm" />
+                                <button id="clear-search-btn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden" aria-label="Clear search">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-500 hover:text-gray-700">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <!-- Add Book Button -->
+                            <button id="add-book-btn" class="flex-shrink-0 flex items-center bg-sky-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-700 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                                Add Book
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Main Content -->
+                <main id="main-content">
+                    <div id="loader" class="hidden text-center py-16">
+                         <svg class="animate-spin h-12 w-12 text-sky-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 1 0 9 9" />
+                        </svg>
+                        <p class="mt-4 text-slate-500">Loading library...</p>
+                    </div>
+
+                    <div id="no-books-message" class="hidden text-center py-16">
+                        <h2 class="text-xl font-semibold text-slate-700">No Books Found</h2>
+                        <p class="text-slate-500 mt-2">Your library is empty. Click 'Add Book' to get started!</p>
+                    </div>
+
+                    <div id="book-list-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    </div>
+                </main>
+            </div>
+            
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="page p-4 sm:p-6 lg:p-8">
+                 <header class="mb-8">
+                     <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
+                     <p class="text-slate-500 mt-1">A quick overview of your library.</p>
+                </header>
+                <main>
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-sm font-medium text-slate-500">Total Books</h3>
+                            <p id="stat-total-books" class="text-3xl font-bold text-slate-900 mt-1">0</p>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-sm font-medium text-slate-500">Available</h3>
+                            <p id="stat-available-books" class="text-3xl font-bold text-green-600 mt-1">0</p>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-sm font-medium text-slate-500">Checked Out</h3>
+                            <p id="stat-checked-out-books" class="text-3xl font-bold text-yellow-600 mt-1">0</p>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-sm font-medium text-slate-500">Unique Authors</h3>
+                            <p id="stat-unique-authors" class="text-3xl font-bold text-sky-600 mt-1">0</p>
+                        </div>
+                    </div>
+                    <!-- Recently Added & Genre Breakdown -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800 mb-4">Recently Added</h2>
+                            <div id="recently-added-list" class="bg-white rounded-lg shadow-md">
+                                <!-- recent books list will be injected here -->
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800 mb-4">Books by Genre</h2>
+                            <div id="genre-breakdown-chart" class="bg-white rounded-lg shadow-md p-6">
+                                <!-- chart will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modals (globally available) -->
+    <div id="book-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-lg">
+            <form id="book-form">
+                <input type="hidden" id="book-id-input">
+                <div class="p-6 border-b border-slate-200">
+                    <h2 id="modal-title" class="text-xl font-bold">Add New Book</h2>
+                </div>
+                <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div id="form-error" class="hidden text-red-500 text-sm"></div>
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                        <input type="text" id="title" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required />
+                    </div>
+                    <div>
+                        <label for="author" class="block text-sm font-medium text-gray-700">Author</label>
+                        <input type="text" id="author" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required />
+                    </div>
+                     <div>
+                        <label for="genre" class="block text-sm font-medium text-gray-700">Genre</label>
+                        <input type="text" id="genre" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="isbn" class="block text-sm font-medium text-gray-700">ISBN</label>
+                            <input type="text" id="isbn" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required />
+                        </div>
+                        <div>
+                            <label for="publicationDate" class="block text-sm font-medium text-gray-700">Published</label>
+                            <input type="date" id="publicationDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" />
+                        </div>
+                    </div>
+                    <div>
+                        <label for="coverImageUrl" class="block text-sm font-medium text-gray-700">Cover Image URL</label>
+                        <input type="url" id="coverImageUrl" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" />
+                    </div>
+                    <div>
+                        <label for="synopsis" class="block text-sm font-medium text-gray-700">Synopsis</label>
+                        <textarea id="synopsis" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"></textarea>
+                    </div>
+                </div>
+                <div class="p-4 bg-slate-50 flex justify-end space-x-3">
+                    <button type="button" id="cancel-book-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors">Cancel</button>
+                    <button type="submit" class="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-700 transition-colors">Save Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="delete-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-sm">
+            <input type="hidden" id="delete-book-id-input">
+            <div class="p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 text-red-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                </div>
+                <h3 class="mt-5 text-lg font-medium text-slate-900">Delete Book</h3>
+                <p class="mt-2 text-sm text-slate-500">
+                    Are you sure you want to permanently delete this book? This action cannot be undone.
+                </p>
+            </div>
+            <div class="p-4 bg-slate-50 flex justify-center space-x-3">
+                <button type="button" id="cancel-delete-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors">Cancel</button>
+                <button type="button" id="confirm-delete-btn" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 transition-colors">Delete</button>
+            </div>
+        </div>
+    </div>
+    <div id="detail-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+             <div class="p-4 sm:p-6 border-b border-slate-200 flex justify-between items-start">
+                <div>
+                    <h2 id="detail-title" class="text-2xl font-bold">Book Title</h2>
+                    <p id="detail-author" class="text-slate-500">by Author</p>
+                </div>
+                 <span id="detail-status" class="px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap ml-4"></span>
+            </div>
+            <div class="p-4 sm:p-6 flex-grow overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Left Column: Cover Image -->
+                    <div class="md:col-span-1">
+                        <img id="detail-cover" src="" alt="Book Cover" class="w-full h-auto object-cover rounded-lg shadow-md bg-slate-200 aspect-[2/3]">
+                    </div>
+
+                    <!-- Right Column: Details & History -->
+                    <div class="md:col-span-2">
+                        <div class="grid grid-cols-2 gap-x-6 gap-y-4 mb-6">
+                             <div>
+                                <h4 class="text-sm text-slate-500 font-medium">ISBN</h4>
+                                <p id="detail-isbn" class="font-semibold"></p>
+                            </div>
+                             <div>
+                                <h4 class="text-sm text-slate-500 font-medium">Genre</h4>
+                                <p id="detail-genre" class="font-semibold"></p>
+                            </div>
+                             <div>
+                                <h4 class="text-sm text-slate-500 font-medium">Publication Date</h4>
+                                <p id="detail-publicationDate" class="font-semibold"></p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-bold border-b pb-2 mb-2">Synopsis</h3>
+                            <p id="detail-synopsis" class="text-slate-600 prose prose-sm max-w-none">No synopsis available.</p>
+                        </div>
+
+                        <div class="mt-6">
+                             <h3 class="text-lg font-bold border-b pb-2 mb-2">History</h3>
+                            <div id="detail-history-list" class="max-h-48 overflow-y-auto pr-2">
+                                <!-- History will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="p-4 bg-slate-50 flex justify-end">
+                <button type="button" id="close-detail-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- App State ---
+            let allBooks = [];
+            const STORAGE_KEY = 'libraryAppBooks';
+
+            // --- DOM Elements ---
+            const pages = document.querySelectorAll('.page');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            const loader = document.getElementById('loader');
+            const noBooksMessage = document.getElementById('no-books-message');
+            const bookListContainer = document.getElementById('book-list-container');
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+
+            const totalBooksStat = document.getElementById('total-books-stat');
+            const availableBooksStat = document.getElementById('available-books-stat');
+
+            const bookModal = document.getElementById('book-modal');
+            const bookForm = document.getElementById('book-form');
+            const modalTitle = document.getElementById('modal-title');
+            const bookIdInput = document.getElementById('book-id-input');
+            const formError = document.getElementById('form-error');
+
+            const deleteModal = document.getElementById('delete-modal');
+            const deleteBookIdInput = document.getElementById('delete-book-id-input');
+
+            const detailModal = document.getElementById('detail-modal');
+
+            // --- Data Persistence ---
+            function saveState() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(allBooks));
+            }
+
+            function loadState() {
+                const savedBooks = localStorage.getItem(STORAGE_KEY);
+                if (savedBooks) {
+                    const parsedBooks = JSON.parse(savedBooks);
+                    allBooks = parsedBooks.map(book => {
+                        if (book.history) {
+                            book.history = book.history.map(entry => ({
+                                ...entry,
+                                date: new Date(entry.date)
+                            }));
+                        }
+                        return book;
+                    });
+                } else {
+                    allBooks = [
+                        { id: '1', title: 'The Hobbit', author: 'J.R.R. Tolkien', isbn: '9780547928227', isAvailable: true, history: [], genre: 'Fantasy', publicationDate: '1937-09-21', coverImageUrl: 'https://m.media-amazon.com/images/I/710+HcoP38L._AC_UF1000,1000_QL80_.jpg', synopsis: 'A reluctant hobbit, Bilbo Baggins, sets out to the Lonely Mountain with a spirited group of dwarves to reclaim their mountain home, and a dragon\'s treasure hoard, from Smaug.' },
+                        { id: '2', title: '1984', author: 'George Orwell', isbn: '9780451524935', isAvailable: false, history: [], genre: 'Dystopian', publicationDate: '1949-06-08', coverImageUrl: 'https://m.media-amazon.com/images/I/71kxa1-0mfL._AC_UF1000,1000_QL80_.jpg', synopsis: 'In a totalitarian superstate, a man whose job is to rewrite history dreams of rebellion against the omnipresent Party and its dictatorial leader, Big Brother.' },
+                        { id: '3', title: 'Dune', author: 'Frank Herbert', isbn: '9780441013593', isAvailable: true, history: [], genre: 'Science Fiction', publicationDate: '1965-08-01', coverImageUrl: 'https://m.media-amazon.com/images/I/81d+pLPM+0L._AC_UF1000,1000_QL80_.jpg', synopsis: 'The son of a noble family is entrusted with the protection of the most valuable asset and most vital element in the galaxy.' },
+                        { id: '4', title: 'Brave New World', author: 'Aldous Huxley', isbn: '9780060850524', isAvailable: true, history: [], genre: 'Dystopian', publicationDate: '1932-08-30', coverImageUrl: 'https://m.media-amazon.com/images/I/81zE42gT3xL._AC_UF1000,1000_QL80_.jpg', synopsis: 'A dystopian novel which presents a future society where people are genetically engineered and conditioned to be happy and compliant.' },
+                        { id: '5', title: 'To Kill a Mockingbird', author: 'Harper Lee', isbn: '9780061120084', isAvailable: false, history: [], genre: 'Classic', publicationDate: '1960-07-11', coverImageUrl: 'https://m.media-amazon.com/images/I/81aY1lxk+9L._AC_UF1000,1000_QL80_.jpg', synopsis: 'A lawyer in the Depression-era South defends a black man against an undeserved rape charge, and his children against prejudice.' },
+                        { id: '6', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', isbn: '9780743273565', isAvailable: true, history: [], genre: 'Classic', publicationDate: '1925-04-10', coverImageUrl: 'https://m.media-amazon.com/images/I/71FTb9X6wsL._AC_UF1000,1000_QL80_.jpg', synopsis: 'A Midwesterner becomes fascinated by the mysterious, wealthy Jay Gatsby and his obsession with his former love, Daisy Buchanan.' },
+                        { id: '7', title: 'Pride and Prejudice', author: 'Jane Austen', isbn: '9780141439518', isAvailable: true, history: [], genre: 'Romance', publicationDate: '1813-01-28', coverImageUrl: 'https://m.media-amazon.com/images/I/81m6P4wQBgL._AC_UF1000,1000_QL80_.jpg', synopsis: 'The spirited Elizabeth Bennet faces mounting pressure from her parents to marry, and she is not afraid to speak her mind.' },
+                        { id: '8', title: 'The Catcher in the Rye', author: 'J.D. Salinger', isbn: '9780316769488', isAvailable: false, history: [], genre: 'Fiction', publicationDate: '1951-07-16', coverImageUrl: 'https://m.media-amazon.com/images/I/71nXPGovoGL._AC_UF1000,1000_QL80_.jpg', synopsis: 'The story of a few days in the life of a troubled teenage boy, Holden Caulfield, who has been expelled from his prep school.' },
+                        { id: '9', title: 'Moby Dick', author: 'Herman Melville', isbn: '9781503280786', isAvailable: true, history: [], genre: 'Adventure', publicationDate: '1851-10-18', coverImageUrl: 'https://m.media-amazon.com/images/I/81m6P4wQBgL._AC_UF1000,1000_QL80_.jpg', synopsis: 'The obsessive quest of Ahab, captain of the whaler Pequod, for revenge on Moby Dick, the giant white sperm whale that on the previous whaling voyage bit off Ahab\'s leg at the knee.' },
+                        { id: '10', title: 'War and Peace', author: 'Leo Tolstoy', isbn: '9780140447934', isAvailable: true, history: [], genre: 'Historical Fiction', publicationDate: '1869-01-01', coverImageUrl: 'https://m.media-amazon.com/images/I/71wXZB-2g5L._AC_UF1000,1000_QL80_.jpg', synopsis: 'A historical novel that chronicles the history of the French invasion of Russia and the impact of the Napoleonic era on Tsarist society through the stories of five Russian aristocratic families.' }
+                    ];
+                    saveState();
+                }
+            }
+
+            // --- Helper Functions ---
+            const showLoader = (show) => loader.classList.toggle('hidden', !show);
+            const showNoBooksMessage = (show) => noBooksMessage.classList.toggle('hidden', !show);
+            const openModal = (modalElement) => modalElement.classList.remove('hidden');
+            const closeModal = (modalElement) => modalElement.classList.add('hidden');
+
+            // --- Rendering Logic ---
+            function createBookCardHTML(book) {
+                 const statusColor = book.isAvailable ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                const toggleButtonText = book.isAvailable ? 'Check Out' : 'Check In';
+                const toggleButtonClass = book.isAvailable ? 'bg-sky-600 hover:bg-sky-700' : 'bg-slate-500 hover:bg-slate-600';
+                
+                const coverImageHTML = book.coverImageUrl 
+                    ? `<img src="${book.coverImageUrl}" alt="${book.title} cover" class="w-full h-48 object-cover">`
+                    : `<div class="w-full h-48 bg-slate-200 flex items-center justify-center">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                           </svg>
+                       </div>`;
+
+                return `
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col transition-transform transform hover:-translate-y-1">
+                        <div data-book-id="${book.id}" class="cursor-pointer">
+                           ${coverImageHTML}
+                        </div>
+                        <div class="p-4 flex-grow flex flex-col">
+                             <div class="flex-grow">
+                                <h3 class="text-md font-bold text-slate-800 leading-tight truncate" title="${book.title}">${book.title}</h3>
+                                <p class="text-sm text-slate-500 mt-1">${book.author}</p>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor} whitespace-nowrap">
+                                    ${book.isAvailable ? 'Available' : 'Checked Out'}
+                                </span>
+                                <div class="flex items-center space-x-1">
+                                    <button data-action="edit" data-id="${book.id}" class="p-2 text-slate-500 hover:text-sky-600 rounded-full transition-colors" aria-label="Edit book">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                        </svg>
+                                    </button>
+                                    <button data-action="delete" data-id="${book.id}" class="p-2 text-slate-500 hover:text-red-600 rounded-full transition-colors" aria-label="Delete book">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.067-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="p-3 bg-slate-50/70">
+                            <button data-action="toggle" data-id="${book.id}" class="w-full text-white px-4 py-2 text-sm rounded-md shadow-sm transition-colors ${toggleButtonClass}">
+                                ${toggleButtonText}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function updateStats() {
+                const totalBooks = allBooks.length;
+                const availableBooks = allBooks.filter(book => book.isAvailable).length;
+                totalBooksStat.textContent = totalBooks;
+                availableBooksStat.textContent = availableBooks;
+            }
+
+            function renderBooks() {
+                const searchTerm = searchInput.value.toLowerCase();
+                clearSearchBtn.classList.toggle('hidden', !searchTerm);
+
+                const filteredBooks = allBooks.filter(book => 
+                    book.title.toLowerCase().includes(searchTerm) ||
+                    book.author.toLowerCase().includes(searchTerm) ||
+                    book.isbn.toLowerCase().includes(searchTerm)
+                );
+
+                bookListContainer.innerHTML = '';
+                showLoader(false);
+                updateStats();
+
+                if (allBooks.length === 0) {
+                     showNoBooksMessage(true);
+                } else if (filteredBooks.length === 0 && searchTerm) {
+                    bookListContainer.innerHTML = `<p class="text-slate-500 text-center col-span-full">No books match your search for "${searchTerm}".</p>`;
+                    showNoBooksMessage(false);
+                } else {
+                    showNoBooksMessage(false);
+                    filteredBooks.forEach(book => {
+                        bookListContainer.innerHTML += createBookCardHTML(book);
+                    });
+                }
+            }
+            
+            function renderGenreChart() {
+                const container = document.getElementById('genre-breakdown-chart');
+                const genreCounts = allBooks.reduce((acc, book) => {
+                    const genre = book.genre?.trim() || 'Uncategorized';
+                    if(genre) {
+                       acc[genre] = (acc[genre] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+
+                const sortedGenres = Object.entries(genreCounts).sort(([, a], [, b]) => b - a);
+
+                if (sortedGenres.length === 0) {
+                    container.innerHTML = '<p class="text-slate-500 text-center p-4">Add genres to your books to see a breakdown here.</p>';
+                    return;
+                }
+
+                const maxCount = Math.max(...sortedGenres.map(([, count]) => count));
+                const colors = ['bg-sky-500', 'bg-emerald-500', 'bg-amber-500', 'bg-violet-500', 'bg-rose-500'];
+
+                const chartHTML = sortedGenres.map(([genre, count], index) => {
+                    const percentage = (count / maxCount) * 100;
+                    const color = colors[index % colors.length];
+                    return `
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-medium text-slate-700">${genre}</span>
+                                <span class="text-sm font-semibold text-slate-500">${count}</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-4">
+                                <div class="${color} h-4 rounded-full" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = `<div class="space-y-4">${chartHTML}</div>`;
+            }
+            
+            function renderDashboard() {
+                const totalBooks = allBooks.length;
+                const availableBooks = allBooks.filter(b => b.isAvailable).length;
+                const checkedOutBooks = totalBooks - availableBooks;
+                const uniqueAuthors = new Set(allBooks.map(b => b.author)).size;
+
+                document.getElementById('stat-total-books').textContent = totalBooks;
+                document.getElementById('stat-available-books').textContent = availableBooks;
+                document.getElementById('stat-checked-out-books').textContent = checkedOutBooks;
+                document.getElementById('stat-unique-authors').textContent = uniqueAuthors;
+
+                const recentlyAddedList = document.getElementById('recently-added-list');
+                const recentBooks = [...allBooks].slice(0, 5);
+                
+                if(recentBooks.length === 0) {
+                    recentlyAddedList.innerHTML = '<p class="text-slate-500 text-center p-6">No books have been added yet.</p>';
+                    return;
+                }
+
+                recentlyAddedList.innerHTML = `
+                    <ul class="divide-y divide-slate-200">
+                        ${recentBooks.map(book => `
+                            <li class="p-4 flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-slate-800">${book.title}</p>
+                                    <p class="text-sm text-slate-500">${book.author}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${book.isAvailable ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                    ${book.isAvailable ? 'Available' : 'Checked Out'}
+                                </span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+
+                renderGenreChart();
+            }
+
+            // --- Event Handlers ---
+            function handleBookListClick(e) {
+                const actionButton = e.target.closest('button[data-action]');
+                const cardBody = e.target.closest('div[data-book-id]');
+
+                if (actionButton) {
+                    const { action, id } = actionButton.dataset;
+                    if (!action || !id) return;
+                    
+                    const book = allBooks.find(b => b.id === id);
+                    if (!book) return;
+
+                    if (action === 'edit') {
+                        modalTitle.textContent = 'Edit Book';
+                        bookIdInput.value = book.id;
+                        bookForm.title.value = book.title;
+                        bookForm.author.value = book.author;
+                        bookForm.isbn.value = book.isbn;
+                        bookForm.genre.value = book.genre || '';
+                        bookForm.publicationDate.value = book.publicationDate || '';
+                        bookForm.coverImageUrl.value = book.coverImageUrl || '';
+                        bookForm.synopsis.value = book.synopsis || '';
+                        openModal(bookModal);
+                    } else if (action === 'delete') {
+                        deleteBookIdInput.value = book.id;
+                        openModal(deleteModal);
+                    } else if (action === 'toggle') {
+                        const newAction = book.isAvailable ? 'Checked Out' : 'Checked In';
+                        const historyEntry = {
+                            action: newAction,
+                            date: new Date(),
+                            user: 'Anonymous' 
+                        };
+                        if (!book.history) book.history = [];
+                        book.history.unshift(historyEntry);
+                        book.isAvailable = !book.isAvailable;
+                        saveState();
+                        renderBooks();
+                    }
+                } else if (cardBody) {
+                    const bookId = cardBody.dataset.bookId;
+                    const book = allBooks.find(b => b.id === bookId);
+                    if (book) showBookDetails(book);
+                }
+            }
+            
+            function showBookDetails(book) {
+                document.getElementById('detail-title').textContent = book.title;
+                document.getElementById('detail-author').textContent = `by ${book.author}`;
+                document.getElementById('detail-isbn').textContent = book.isbn || 'N/A';
+                document.getElementById('detail-genre').textContent = book.genre || 'N/A';
+                document.getElementById('detail-publicationDate').textContent = book.publicationDate || 'N/A';
+                document.getElementById('detail-synopsis').textContent = book.synopsis || 'No synopsis available.';
+                
+                const coverImg = document.getElementById('detail-cover');
+                if (book.coverImageUrl) {
+                    coverImg.src = book.coverImageUrl;
+                    coverImg.alt = `${book.title} cover`;
+                } else {
+                    coverImg.src = ''; // Or a placeholder image
+                    coverImg.alt = 'No cover image available';
+                }
+                
+                const statusEl = document.getElementById('detail-status');
+                statusEl.textContent = book.isAvailable ? 'Available' : 'Checked Out';
+                statusEl.className = `px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap ml-4 ${book.isAvailable ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`;
+                
+                renderHistoryList(book.history, document.getElementById('detail-history-list'));
+                openModal(detailModal);
+            }
+
+            function renderHistoryList(history, container) {
+                if (!history || history.length === 0) {
+                    container.innerHTML = '<p class="text-slate-500 text-center p-4">No history for this book yet.</p>';
+                    return;
+                }
+                
+                const historyHTML = history.map(entry => {
+                    const actionColor = entry.action === 'Checked In' ? 'text-green-600' : 'text-yellow-600';
+                    return `
+                        <li class="flex justify-between items-center py-3 border-b border-slate-200 last:border-b-0">
+                            <div>
+                                <p class="font-semibold ${actionColor}">${entry.action}</p>
+                                <p class="text-sm text-slate-500">by ${entry.user}</p>
+                            </div>
+                            <p class="text-sm text-slate-400">${entry.date.toLocaleString()}</p>
+                        </li>
+                    `;
+                }).join('');
+                
+                container.innerHTML = `<ul class="divide-y divide-slate-100">${historyHTML}</ul>`;
+            }
+
+            function handleBookFormSubmit(e) {
+                e.preventDefault();
+                const id = bookIdInput.value;
+                const title = bookForm.title.value.trim();
+                const author = bookForm.author.value.trim();
+                const isbn = bookForm.isbn.value.trim();
+                const genre = bookForm.genre.value.trim();
+                const publicationDate = bookForm.publicationDate.value;
+                const coverImageUrl = bookForm.coverImageUrl.value.trim();
+                const synopsis = bookForm.synopsis.value.trim();
+
+                if (!title || !author || !isbn) {
+                    formError.textContent = 'Title, Author, and ISBN are required.';
+                    formError.classList.remove('hidden');
+                    return;
+                }
+
+                const bookData = { title, author, isbn, genre, publicationDate, coverImageUrl, synopsis };
+
+                if (id) { 
+                    const bookIndex = allBooks.findIndex(b => b.id === id);
+                    if (bookIndex > -1) {
+                        allBooks[bookIndex] = { ...allBooks[bookIndex], ...bookData };
+                    }
+                } else { 
+                    allBooks.unshift({
+                        ...bookData,
+                        id: Date.now().toString(),
+                        isAvailable: true,
+                        history: [],
+                    });
+                }
+                saveState();
+                renderBooks();
+                renderDashboard();
+                closeModal(bookModal);
+            }
+
+            function handleDeleteConfirm() {
+                const id = deleteBookIdInput.value;
+                allBooks = allBooks.filter(b => b.id !== id);
+                saveState();
+                renderBooks();
+                renderDashboard();
+                closeModal(deleteModal);
+            }
+            
+            // --- Routing ---
+            function router() {
+                const path = window.location.hash.replace('#', '') || '/library';
+                
+                pages.forEach(p => p.classList.remove('active'));
+                navLinks.forEach(l => l.classList.remove('bg-slate-700', 'font-semibold'));
+
+                let targetPage;
+                let targetLink;
+                
+                if (path.startsWith('/dashboard')) {
+                    targetPage = document.getElementById('page-dashboard');
+                    targetLink = document.querySelector('a[href="#/dashboard"]');
+                    renderDashboard();
+                } else { // Default to library
+                    targetPage = document.getElementById('page-library');
+                    targetLink = document.querySelector('a[href="#/library"]');
+                    renderBooks();
+                }
+                
+                if (targetPage) targetPage.classList.add('active');
+                if (targetLink) targetLink.classList.add('bg-slate-700', 'font-semibold');
+            }
+
+
+            // --- Initialization ---
+            function setupEventListeners() {
+                window.addEventListener('hashchange', router);
+                
+                document.getElementById('add-book-btn').addEventListener('click', () => {
+                    modalTitle.textContent = 'Add New Book';
+                    bookForm.reset();
+                    bookIdInput.value = '';
+                    formError.classList.add('hidden');
+                    openModal(bookModal);
+                });
+                
+                document.getElementById('cancel-book-btn').addEventListener('click', () => closeModal(bookModal));
+                document.getElementById('cancel-delete-btn').addEventListener('click', () => closeModal(deleteModal));
+                document.getElementById('confirm-delete-btn').addEventListener('click', handleDeleteConfirm);
+                document.getElementById('close-detail-btn').addEventListener('click', () => closeModal(detailModal));
+
+                bookModal.addEventListener('click', (e) => {
+                    if(e.target === bookModal) closeModal(bookModal)
+                });
+                deleteModal.addEventListener('click', (e) => {
+                    if(e.target === deleteModal) closeModal(deleteModal)
+                });
+                 detailModal.addEventListener('click', (e) => {
+                    if(e.target === detailModal) closeModal(detailModal)
+                });
+
+                bookForm.addEventListener('submit', handleBookFormSubmit);
+                searchInput.addEventListener('input', renderBooks);
+                clearSearchBtn.addEventListener('click', () => {
+                    searchInput.value = '';
+                    renderBooks();
+                });
+                bookListContainer.addEventListener('click', handleBookListClick);
+            }
+
+            function initializeApp() {
+                loadState();
+                setupEventListeners();
+                router();
+            }
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

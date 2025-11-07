@@ -126,9 +126,9 @@
             
             <!-- Dashboard Page -->
             <div id="page-dashboard" class="page p-4 sm:p-6 lg:p-8">
-                 <header class="mb-8">
-                     <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
-                     <p class="text-slate-500 mt-1">A quick overview of your library.</p>
+                 <header class="mb-8 p-6 bg-white rounded-lg shadow-md">
+                    <h1 class="text-3xl font-bold text-slate-900">Welcome to Your Library!</h1>
+                    <p class="text-slate-500 mt-1">Here's a quick overview of your collection.</p>
                 </header>
                 <main>
                     <!-- Stats Cards -->
@@ -668,7 +668,7 @@
             
             // --- Routing ---
             function router() {
-                const path = window.location.hash.replace('#', '') || '/library';
+                const path = window.location.hash.replace('#', '') || '/dashboard';
                 
                 pages.forEach(p => p.classList.remove('active'));
                 navLinks.forEach(l => l.classList.remove('bg-slate-700', 'font-semibold'));
